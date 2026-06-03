@@ -1,0 +1,144 @@
+---
+title: "Research Paper Proposal — Track Economics"
+author: "Alona Sycheska"
+subtitle: |
+  E_EBE2_RP — Research Paper, Period 2.6 (2025–2026)
+  
+  Supervisor: Prof. Dr. Henri L.F. de Groot
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    latex_engine: xelatex
+    number_sections: true
+  html_document:
+    toc: true
+    toc_depth: 3
+    df_print: paged
+    number_sections: true
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(dplyr)
+```
+
+## Problem Statement
+
+The Netherlands' 30% ruling (30%-regeling) is a tax incentive that allows employers to pay up to 30% of a highly skilled migrant's salary tax-free, compensating for the costs of relocating to the Netherlands. Since its introduction, the scheme has been a central instrument in the country's strategy to attract international talent. However, the ruling has been subject to repeated reforms: the maximum duration was reduced from eight to five years in 2019, a stepped 30/20/10 structure was introduced in 2024, and a further reduction to a flat 27% rate is scheduled for 2027.
+
+These reforms raise a fundamental question: **does the 30% ruling effectively attract highly skilled migrants to the Netherlands, and how do changes to the ruling affect skilled immigration flows?**
+
+We investigate this question by exploiting the 2019 reform (reduction from 8 to 5 years) as a natural experiment. Using a difference-in-differences framework, we compare highly skilled migration inflows to the Netherlands before and after the reform with inflows to comparable EU countries that did not implement similar changes during the same period. We supplement this with an analysis of IND (Immigration and Naturalisation Service) data on knowledge migrant permits, examining whether permit applications and approvals show a structural break around the reform date.
+
+The research is connected to topics covered in International Trade and Development Economics (migration, comparative advantage of talent), Public Economics (tax incentives, fiscal costs), and Regional and Urban Economics (geographic concentration of knowledge migrants).
+
+
+## Research Questions
+
+1. **Main question:** What is the effect of the 2019 tightening of the 30% ruling on highly skilled migration inflows to the Netherlands?
+
+2. **Sub-questions:**
+   - How have knowledge migrant permit applications evolved before and after the 2019 reform?
+   - Does a difference-in-differences comparison with other EU countries confirm a causal effect of the reform on skilled immigration? (?)
+   - Are the effects of the reform heterogeneous across sectors (e.g., technology, finance, academia) or regions (e.g., Amsterdam metropolitan area vs. other regions)? (?)
+   - What are the fiscal implications: does the budgetary saving from a less generous ruling outweigh the potential loss of tax revenue from fewer skilled migrants?
+
+## Method of Approach
+
+**Identification strategy:**
+
+The 2019 reform provides a quasi-natural experiment. We use a difference-in-differences (DiD) design:
+
+- *Treatment group:* Highly skilled migration inflows to the Netherlands.
+- *Control group:* Highly skilled migration inflows to comparable EU countries without contemporaneous changes to their skilled migrant tax schemes (e.g., Belgium, Germany, France). (?)
+- *Pre-treatment period:* 2015–2018.
+- *Post-treatment period:* 2020–2023 (excluding 2019 as a transition year).
+
+We estimate a panel regression with country and year fixed effects. As a robustness check, we construct an event study plot showing the evolution of skilled migration inflows relative to the reform year, verifying the parallel trends assumption.
+
+**Supplementary analysis:**
+
+Within the Netherlands, we examine IND permit data by sector and nationality to identify which groups were most affected. If regional data is available, we test whether regions with a high concentration of 30% ruling beneficiaries (Amsterdam, Eindhoven, The Hague) experienced differential effects.
+
+
+## Data Sources
+
+| Source | Variables | Level | Access |
+|--------|-----------|-------|--------|
+| IND (Immigration and Naturalisation Service) | Knowledge migrant permits: applications, approvals, by nationality and sector | National, annual | Public (ind.nl) |
+| CBS StatLine | Immigration by migration motive (labor, study, family); population by migration background per municipality | National/municipal, annual | Public (opendata.cbs.nl) |
+| Eurostat | Immigration by education level (ISCED) and citizenship, by EU country (migr_imm1ctz, migr_eil) | Country, annual | Public (ec.europa.eu/eurostat) |
+| OECD International Migration Database | Inflows of foreign workers by skill level, OECD countries | Country, annual | Public (stats.oecd.org) |
+| Dutch government budget documents | Fiscal cost of 30% ruling over time | National, annual | Public (rijksbegroting.nl) |
+| Tax Foundation / OECD Tax Database | International comparison of tax incentives for skilled migrants | Country, annual | Public |
+
+
+## Provisional Table of Contents
+
+1. **Introduction**
+   - Motivation: the role of tax incentives in international talent competition
+   - Research question and contribution
+   - Outline of the paper
+
+2. **Institutional Background**
+   - The Dutch 30% ruling: history, eligibility criteria, and reforms
+   - Timeline of reforms: 2012, 2019, 2024, 2027
+   - International comparison: how do other countries attract skilled migrants?
+
+3. **Literature Review**
+   - Tax competition and the mobility of skilled labor (Kleven et al., 2014; Akcigit et al., 2016)
+   - The effectiveness of tax incentives for attracting talent (Kleven et al., 2020 — Danish evidence)
+   - Migration policy and skilled labor flows in Europe
+   - The fiscal costs and benefits of skilled immigration
+
+4. **Data and Descriptive Statistics**
+   - Description of data sources and sample construction
+   - Trends in knowledge migrant permits in the Netherlands (2010–2023)
+   - Cross-country trends in skilled immigration
+   - Descriptive comparison of pre- and post-reform periods
+
+5. **Empirical Strategy**
+   - Difference-in-differences framework
+   - Specification of the econometric model
+   - Selection of control countries and justification
+   - Parallel trends assumption and event study design
+   - Potential threats to identification (COVID-19, Brexit, other confounders)
+
+6. **Results**
+   - Main DiD estimates: effect of the 2019 reform on skilled immigration
+   - Event study plots
+   - Heterogeneity analysis: by sector, nationality, and region
+   - Robustness checks
+
+7. **Discussion and Policy Implications**
+   - Interpretation of results in the context of the literature
+   - Fiscal trade-off: budgetary savings vs. lost talent
+   - Implications for the upcoming 2027 reform (reduction to 27%)
+   - Limitations of the analysis
+
+8. **Conclusion**
+
+9. **References**
+
+10. **Appendix** — Additional tables, robustness checks, data documentation
+
+## Preliminary Timeline
+
+| Week | Activity |
+|------|----------|
+| Week 1 | Finalize research question; collect IND, CBS, and Eurostat data; begin literature review |
+| Week 2 | Complete data cleaning and descriptive statistics; run preliminary regressions; presentation of bottlenecks |
+| Week 3 | Finalize econometric analysis; write results and methodology sections; submit draft |
+| Week 4 | Write referee report; process feedback; finalize paper and poster |
+
+
+## Key References
+
+- Kleven, H.J., Landais, C., Saez, E., & Schultz, E. (2014). Migration and wage effects of taxing top earners: Evidence from the foreigners' tax scheme in Denmark. *Quarterly Journal of Economics*, 129(1), 333–378.
+- Akcigit, U., Baslandze, S., & Stantcheva, S. (2016). Taxation and the international mobility of inventors. *American Economic Review*, 106(10), 2930–2981.
+- Kabátek, J. (2021). Happy Birthday, You're Fired! Effects of an age-dependent minimum wage on youth employment flows in the Netherlands. *ILR Review*, 74(4), 1008–1035.
+- OECD (2025). Corporate Tax Statistics 2025. Paris: OECD Publishing.
