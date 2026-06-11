@@ -1,0 +1,591 @@
+---
+title: "The 30% Ruling and Skilled Migration to the Netherlands"
+author: "Alona Sycheska"
+subtitle: |
+  E_EBE2_RP — Research Paper, Period 2.6 (2025–2026)
+  
+  Supervisor: Prof. Dr. Henri L.F. de Groot
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    latex_engine: xelatex
+    number_sections: true
+  html_document:
+    toc: true
+    toc_depth: 3
+    df_print: paged
+    number_sections: true
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r libraries, include=FALSE}
+library(fixest)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(scales)
+```
+
+# Introduction
+
+The Dutch 30% ruling (30%-regeling) allows employers to pay up to 30% of a highly skilled
+migrant's salary tax-free for up to five years (Netherlands Chamber of Commerce, KVK, 2025). It is one of the most generous tax incentives
+for skilled migrants in Europe and a central instrument in the Netherlands' strategy to attract
+international talent (Godar, Flamant & Richard, 2021; Vankan et al., 2017). However, the ruling has been subject to repeated reforms: the maximum 
+duration was reduced from eight to five years in 2019, a stepped 30/20/10 structure was
+briefly introduced in 2024 (later reversed), and a further reduction to 27% is scheduled for 2027 (Bijlsma et al., 2024).
+
+This paper examines the effect of the 2019 reform on skilled migration to the Netherlands.
+We combine descriptive analysis of migration trends with a fiscal computation of the ruling's
+budgetary effects, drawing on Eurostat cross-country data, IND permit statistics, and the
+recent SEO evaluation (Bijlsma et al., 2024). As a complementary exercise, we estimate a
+difference-in-differences model comparing the Netherlands to peer European countries.
+
+The SEO evaluation (2024), using confidential CBS microdata, found that the 2019 reform
+reduced inflows of high-earning migrants by 19.6%. Timm, Giuliodori & Muller (2025), studying
+the earlier 2012 reform, found that expanding eligibility more than doubled migration just above
+the income threshold, with an elasticity of 1.6–2.7. Our contribution is threefold: (1) we provide
+an accessible, institutional description of the ruling and its reforms, (2) we
+compute fiscal effects across salary levels and policy scenarios, connecting the findings from
+existing studies, and (3) we examine whether the reform effect is detectable in publicly available
+cross-country data — finding that it is not, due to COVID-19 contamination and data granularity
+limitations.
+
+
+# Institutional Background
+
+## How the 30% Ruling Works
+
+The 30% ruling allows employers to grant up to 30% of a qualifying employee's gross
+salary as a tax-free allowance, intended to compensate for extraterritorial costs —
+additional expenses incurred from living outside one's home country. The tax-free portion
+is not subject to income tax or social security contributions in Box 1. The employee's
+taxable income is therefore reduced to 70% of gross salary, substantially lowering their
+effective tax rate (Timm et al., 2025).
+
+To qualify, an employee must be recruited from abroad and possess specific expertise that is scarce on the Dutch labour market. Since 2012, this criterion is operationalised as a minimum salary threshold: €46,660 for 2025 (€35,468 for employees under 30 with a Master's degree) (Netherlands Chamber of Commerce, KVK, 2025). Academic researchers are exempt from the income requirement. The employee must have lived more than 150 km from the Dutch border for the majority of the 24 months prior to starting employment in the Netherlands (Belastingdienst, 2025).
+
+## Timeline of Reforms
+
+```{r reforms-table, include=FALSE}
+reforms <- data.frame(
+  Year = c(2004, 2012, 2012, 2017, 2019, 2024, 2025, 2027),
+  Reform = c(
+    "Introduction of 150 km distance requirement",
+    "Income threshold introduced (€35,000), replacing 'scarce skills' criterion",
+    "Maximum duration reduced from 10 to 8 years",
+    "Dialogic evaluation concludes 80% of users leave within 5 years; recommends shortening duration",
+    "Maximum duration reduced from 8 to 5 years (following Dialogic evaluation)",
+    "30-20-10 stepped structure introduced; salary cap at WNT norm (€233k)",
+    "30-20-10 reversed; partial non-resident status abolished",
+    "Rate reduced from 30% to 27% (scheduled)"
+  )
+)
+knitr::kable(reforms, caption = "Timeline of 30% ruling reforms")
+```
+
+The repeated reforms reflect an ongoing tension between the ruling's effectiveness in
+attracting talent and concerns about its fiscal cost and generosity. As Timm et al. (2025)
+note, the 2012 reform improved transparency by replacing the subjective "scarce skills"
+assessment with a clear income threshold, which paradoxically *increased* take-up by making
+eligibility more predictable for both employers and migrants.
+
+## Who Are the Knowledge Migrants?
+
+The IND/CBS cohort study (Van der Werf et al., 2023) followed two cohorts of non-EEA knowledge migrants who received their first residence permit in 2014 (N=7,764) and 2017 (N=12,192). This provides a unique long-run picture of who comes, how long they stay, and where they work.
+
+```{r ind-cohort}
+# IND/CBS cohort study key statistics (Van der Werf et al., 2023)
+# Source: "Kenniswerkers en zoekjaarders in Nederland", IND/CBS, October 2023
+
+# Top nationalities
+nationalities <- data.frame(
+  Rank = 1:5,
+  Nationality = c("Indian", "American", "Chinese", "Turkish/Japanese", "Brazilian/Russian"),
+  Share_2014 = c("27%", "13%", "12%", "4–5%", "4%"),
+  Share_2017 = c("30%", "12%", "10%", "4–6%", "4–5%")
+)
+knitr::kable(nationalities, caption = "Top nationalities of knowledge migrants (IND/CBS, 2023)")
+```
+
+Key demographic facts: average age at arrival is 32 years, approximately 70% are male, and over 90% arrive from outside the EU. The dominance of Indian, American, and Chinese nationals reflects the global competition for STEM and business services talent that the 30% ruling is designed to win.
+
+**Retention:** only 35% of the 2014 cohort was still in the Netherlands at the end of 2020 — six to seven years after arrival. About half (53%) remained after three to four years. Of those who stayed, the vast majority (91%) were employed. Most who left returned to their country of origin (India, USA, China). This retention pattern has important implications for the fiscal analysis, discussed below.
+
+**Geographic concentration:** knowledge migrants are heavily concentrated in a few cities. Among the 2017 cohort still in the Netherlands at end of 2020: Amsterdam (28%), Eindhoven (8%), Amstelveen (7%), Utrecht (6%), Den Haag (6%). SEO (2024) separately estimates that approximately 5,339 of the 11,168 migrants who came to the Netherlands specifically because of the 30% ruling live in Amsterdam. The two figures are not directly comparable — IND/CBS tracks all knowledge migrants who remained, while SEO's estimate is based on a behavioural model isolating those whose location decision was driven by the tax incentive — but both point to Amsterdam as by far the dominant destination for this group.
+
+**Sectors:** Among the IND/CBS cohorts, the most common sectors are software development and production (15–16%) and university education (7–12%) (Van der Werf et al., 2023). Timm et al. (2025) report that business services — broadly defined to include IT, legal, consulting, journalism, administration, and financial intermediary services — is by far the largest sector among 30% ruling beneficiaries, accounting for 55.5% of beneficiaries in the post-2012 period, compared to only 15.0% of non-beneficiaries (Table 2.2). This sector also showed the strongest response to the 2012 reform, with an estimated increase of approximately 200% relative to pre-reform levels — larger in absolute terms than all other sectors combined. The IND/CBS software share sits within Timm et al.'s broader business services category. Giarola et al. (2023) report business services (29%) and trade/transport/catering (21%) as the two largest sectors in their sample, which covers a different and broader population of beneficiaries going back to 2002.
+
+**Demographics from Giarola et al. (2023):** 30% ruling recipients are predominantly male (78%), relatively young (54% under 35), and majority are single (55%) without children (60%). Strikingly, three-fifths have wages placing them in the top 5% of the Dutch wage distribution, and one-third are in the top 1% — confirming that the ruling disproportionately benefits very high earners despite also covering mid-level salaries.
+
+**Dialogic (2017)** provides more detail on the 2015 user base (N=56,431):
+
+```{r dialogic-users, echo=FALSE}
+# Key user statistics from Dialogic (2017) for 2015
+dialogic_stats <- data.frame(
+  Characteristic = c(
+    "Share male", "Share higher educated", "Average gross salary (excl. allowance)",
+    "Median gross salary", "Share using ruling ≤5 years",
+    "Real ETK as share of salary (average user)",
+    "Real ETK as share of salary (income >€100k)",
+    "Share: forfait too high (real ETK < 30%)",
+    "Share: forfait appropriate",
+    "Share: forfait too low (real ETK > 30%)"
+  ),
+  Value = c("75%", "~90%", "€84,000", "€52,000", "~80%",
+            "~29%", "<6%", "~50%", "~35%", "~15%")
+)
+knitr::kable(dialogic_stats, caption = "User profile and ETK analysis, Dialogic (2017)")
+```
+
+The skew between average (€84,000) and median (€52,000) salary confirms that a small number of very high earners substantially inflates the average. The ETK analysis is crucial: for incomes above €100,000, real extraterritorial costs fall below 6% of salary, meaning the 30% exemption is predominantly a tax subsidy for high earners rather than a cost reimbursement. This finding explains both the political pressure to reform the ruling and the concentration of behavioural responses among top earners documented by Giarola et al. (2023).
+
+**The zoekjaarder pipeline:** 84% of job-search-year permit holders in 2017 had previously been in the Netherlands for higher education. Just over half (52–54%) converted to a knowledge worker permit directly after the search year, and 85% found some form of work during or after the search period. This reveals an important pathway: international students → search year → knowledge migrant → potential 30% ruling beneficiary (Van der Werf et al., 2023).
+
+The Netherlands is not alone in offering tax incentives for skilled migrants. Similar schemes
+exist in Denmark (26% flat rate for up to 7 years), Italy (up to 70% income exemption for
+returnees), Spain (the "Beckham Law," 24% flat rate for 6 years), and Portugal (the former
+NHR regime). However, the design varies considerably: some target only researchers, others
+cap at certain income levels, and durations range from 3 to 10 years. Timm et al. (2025) note
+that the number of such preferential tax schemes within the EU increased from 5 in the 1990s
+to 28 by 2021 (Flamant et al., 2021), reflecting intensifying international tax competition for
+skilled workers.
+
+# Literature Review
+
+Three studies provide direct evidence on the Dutch 30% ruling, each examining a different
+reform and margin of adjustment:
+
+**Timm, Giuliodori & Muller (2025)** study the **2012 reform** (introduction of income
+threshold). Using CBS administrative microdata and a difference-in-differences design comparing
+income bins above and below the newly introduced threshold, they find that migration more
+than doubled in the income range just above the threshold: increases of 376%, 148%, and 108%
+for migrants within 1%, 5%, and 10% of the threshold respectively. Nearly 11,000 additional
+migrants arrived between 2012 and 2019 due to the reform. Non-EU migrants were far more
+responsive (140% increase in the 100–110% range) than EU migrants (48%), and the business
+services sector saw the largest response (~200%). The implied migration elasticity with respect
+to the net-of-tax rate ranges from 1.6 to 2.7, higher than Kleven et al.'s (2014) estimate of
+1.6 for top earners in Denmark — suggesting mid-level earners are at least as tax-responsive as
+top earners. Their back-of-the-envelope budget calculations suggest the reform was self-financing:
+the tax revenue from additional migrants exceeds the cost of the exemption, because
+beneficiaries still pay taxes on 70% of their income.
+
+**Bijlsma et al. / SEO (2024)** study the **2019 reform** (duration reduction from 8 to 5 years).
+Using a similar DiD approach with CBS microdata but comparing income groups above and below
+the salary threshold, they find a 19.6% decline in inflows for high earners (50–100% above the
+threshold). The overall migration elasticity is 0.52 (lower than Timm et al. because it captures
+the response to a less dramatic reform — a duration change rather than an eligibility expansion).
+The ruling generated €900 million in cumulative net tax revenue over 2016–2022, averaging
+€128.5 million per year. SEO estimates that complete abolition of the ruling would reduce
+skilled immigration by approximately 40%.
+
+**Giarola, Marie, Cörvers & Schmeets (2023)** study the **emigration side** of the 2012 reform. The 2012 reform introduced a 150 km distance criterion, which retroactively removed eligibility from migrants who had arrived from Belgium, Luxembourg, and parts of western Germany and northern France between 2007 and 2011. These workers lost their tax break after 5 years instead of the promised 10. Using Belastingdienst and CBS administrative data on 54,386 unique beneficiaries from 2002–2019, they estimate the causal effect on out-migration decisions using a DiD comparing treated (Belgium/Luxembourg arrivals, 2007–2011) to untreated workers.
+
+Key findings: affected workers stayed **5.3 fewer months (8% less time)** in the Netherlands. The probability of staying beyond 5 years — i.e., past the loss of the tax break — decreased by **13%**. The out-migration elasticity for the top 1% of earners is estimated at **1.48–1.74**, comparable to Kleven et al.'s in-migration estimates. Crucially, workers between the 50th and 95th percentile show **no out-migration response whatsoever** — the effect is driven entirely by the top 5%, and especially the top 1%. Highly mobile individuals (those who had arrived from a third country rather than their origin country) respond more strongly, and family roots (marriage, children) do not significantly reduce the mobility response. Consistent with SEO (2024), the reform is found to be **fiscally cost-neutral**: increased tax receipts from lower-income stayers who remain in the Netherlands offset the revenue lost from departing top earners.
+
+Individual estimates in this literature range from 0.52 (Bijlsma et al., 2024) to 1.74 (Giarola et al., 2023), with Kleven et al. (2014) and Akcigit et al. (2016) finding elasticities around 1.6 for top earners.
+
+**Vankan et al. / Dialogic (2017)** provide the official evaluation commissioned by the Ministry
+of Finance that directly triggered the 2019 reform. Using CBS microdata on 56,431 users in 2015
+and a survey of 1,463 beneficiaries, they find the ruling effective on all three stated objectives.
+Their key empirical finding — that **approximately 80% of users apply the ruling for five years
+or fewer** — became the direct justification for the 2019 duration reduction. They estimate
+1,765–5,575 additional foreign workers in the Netherlands due to the ruling (of whom
+1,000–4,000 earn below €100k). On the ETK question, they find real extraterritorial costs
+average 29% of salary for a typical user, but only 20% across the full user base because
+high earners have proportionally lower costs — at incomes above €100k, real ETK fall
+below 6% of salary, making the ruling effectively a tax subsidy for high earners. No evidence
+of displacement of Dutch workers was found.
+
+
+# Data: 30% Ruling Usage
+
+## SEO Evaluation Data
+
+The most comprehensive data on 30% ruling usage comes from the 2024 SEO evaluation
+"Kunde, Kosten en Keuzes" (Bijlsma et al., 2024), which used CBS administrative microdata.
+We digitise their key tables for our analysis.
+
+```{r seo-users}
+# Active users and fiscal cost per year (SEO 2024, Figure 3.1 / Table 3.11)
+# Source: Bijlsma et al. (2024), o.b.v. CBS Microdata
+seo_users <- data.frame(
+  year = 2016:2022,
+  active_users = c(59565, 69538, 84165, 93932, 97604, 89049, 109502),
+  total_income_m = c(4597, 5401, 6273, 7265, 8103, 6686, 8001),
+  tax_exempt_m = c(1379, 1620, 1882, 2179, 2431, 2006, 2400),
+  tax_revenue_m = c(1287, 1512, 1756, 2034, 2269, 1872, 2240),
+  foregone_revenue_m = c(552, 648, 753, 872, 972, 802, 960),
+  net_revenue_m = c(736, 864, 1004, 1162, 1296, 1070, 1280)
+)
+
+seo_users
+```
+
+The number of active 30% ruling users nearly doubled from 59,565 in 2016 to 109,502 in 2022.
+This growth tracks the broader international trend of rising labour migration to the EU, but also
+reflects the Netherlands' strong labour market and the attractiveness of the ruling itself.
+Total income of beneficiaries reached €8 billion in 2022, of which €2.4 billion was tax-exempt
+under the ruling.
+
+```{r seo-users-plot, fig.width=8, fig.height=5}
+ggplot(seo_users, aes(x = year, y = active_users / 1000)) +
+  geom_col(fill = "#2C73D2", alpha = 0.8) +
+  geom_text(aes(label = comma(active_users)), vjust = -0.5, size = 3) +
+  labs(title = "Active 30% ruling users in the Netherlands",
+       subtitle = "Source: SEO (2024), based on CBS microdata",
+       x = "Year", y = "Thousands of users") +
+  scale_y_continuous(limits = c(0, 130)) +
+  theme_minimal()
+```
+
+## New Inflows by Cohort
+
+Annual inflow of new 30% ruling users (SEO 2024, Table 3.1)
+```{r seo-cohorts, echo=FALSE}
+
+seo_inflow <- data.frame(
+  year = 2016:2022,
+  new_users = c(19254, 22811, 27579, 29658, 22742, 30884, 46042)
+)
+
+seo_inflow
+```
+
+New inflows grew steadily from 19,254 in 2016 to 29,658 in 2019, dipped to 22,742 in 2020
+(COVID), and surged to 46,042 in 2022 — likely reflecting post-pandemic backlog clearing. The
+2020 dip is notable: it coincides with both the COVID travel restrictions and the first full year
+under the shortened 5-year duration, making it impossible to disentangle the two effects in
+aggregate data.
+
+```{r seo-inflow-plot, fig.width=8, fig.height=5}
+ggplot(seo_inflow, aes(x = year, y = new_users / 1000)) +
+  geom_line(linewidth = 1.2, color = "#2C73D2") +
+  geom_point(size = 3, color = "#2C73D2") +
+  geom_vline(xintercept = 2019, linetype = "dashed", color = "grey40") +
+  annotate("text", x = 2019.1, y = 45, label = "2019 reform", hjust = 0, size = 3) +
+  labs(title = "Annual inflow of new 30% ruling users",
+       subtitle = "Source: SEO (2024), Table 3.1",
+       x = "Year", y = "New users (thousands)") +
+  theme_minimal()
+```
+
+## Belastingdienst Application Data (Woo Request)
+
+30% ruling applications — from Woo (freedom of information) request, September 2024
+Source: Besluit Woo-verzoek over de 30%-regeling, Belastingdienst
+
+```{r woo-data, echo=FALSE}
+woo <- data.frame(
+  year = 2018:2023,
+  applications = c(30753, 33376, 27629, 33143, 48414, 44463),
+  approved = c(25963, 34209, 29730, 30162, 42467, 48163),
+  rejected = c(1078, 1615, 1348, 1291, 1586, 1883)
+)
+
+woo$approval_rate <- round(woo$approved / (woo$approved + woo$rejected) * 100, 1)
+
+woo
+```
+
+The Belastingdienst data confirms the pattern: applications dipped in 2020 (COVID) but surged
+in 2022–2023. The approval rate has remained consistently above 93%, suggesting that the
+eligibility criteria are well understood by employers and that few ineligible applications are filed.
+
+## Migration Elasticities in the Literature
+
+The responsiveness of migrants to tax incentives is a central parameter for policy evaluation.
+The table below compares key elasticity estimates from the literature:
+
+```{r elasticity-comparison, echo=FALSE}
+# Migration elasticity estimates from the literature
+elasticities <- data.frame(
+  Study = c("Kleven et al. (2014)", 
+            "Timm et al. (2025) — lower bound",
+            "Timm et al. (2025) — upper bound",
+            "Bijlsma et al./SEO (2024)",
+            "Giarola et al. (2023) — top 1%",
+            "Moretti & Wilson (2017)"),
+  Country = c("Denmark", "Netherlands", "Netherlands", 
+              "Netherlands", "Netherlands", "United States"),
+  Reform = c("Foreigners' tax scheme", "2012 income threshold", 
+             "2012 income threshold", "2019 duration reduction",
+             "2012 distance criterion (emigration)", "State-level R&D tax credits"),
+  Population = c("Top earners (in-migration)", "Mid-level earners (in-migration)", 
+                 "Mid-level earners (in-migration)", "All beneficiaries (in-migration)",
+                 "Top 1% earners (out-migration)", "Star scientists"),
+  Elasticity = c(1.6, 1.6, 2.7, 0.52, 1.61, 1.8)
+)
+knitr::kable(elasticities, caption = "Migration elasticity estimates with respect to net-of-tax rate")
+```
+
+The SEO elasticity of 0.52 is notably lower because it captures the response to a *duration*
+change (8→5 years) rather than an eligibility change. A shorter benefit period reduces the
+present value of the tax advantage but does not eliminate it, so the behavioural response is
+smaller than to a binary eligibility change like the 2012 reform studied by Timm et al.
+
+
+
+# Data: Cross-Country Skilled Migration (Eurostat)
+
+```{r load-eurostat}
+# Eurostat first residence permits by occupation (migr_resocc)
+data <- read.csv("data/1_migr_resocc__custom_21740522_linear.csv")
+
+# Clean: keep relevant columns, remove EU aggregates, rename
+data <- data %>% 
+  select(-DATAFLOW, -LAST.UPDATE, -freq, -duration, -citizen, -unit, -OBS_FLAG, -CONF_STATUS)
+data <- data[!grepl("European Union", data$geo), ]
+colnames(data) <- c("reason", "country", "year", "permits")
+```
+
+```{r nl-blue-card}
+# The Netherlands barely uses the EU Blue Card — relies on its own kennismigrant scheme
+data[data$country == "Netherlands" & data$reason == "EU Blue card" & data$year >= 2015, 
+     c("year", "permits")]
+```
+
+The Netherlands issued only 250 EU Blue Cards in 2024, compared to over 13,000 "Highly skilled
+workers" permits. This confirms that the Netherlands relies almost entirely on its national
+knowledge migrant scheme, making Dutch-specific policy changes (like the 30% ruling reform)
+disproportionately important for skilled migration flows.
+
+```{r filter-analysis}
+# Focus on "Highly skilled workers" permits for NL + control countries
+# Controls: Denmark, Sweden, Austria (full data, no concurrent policy changes)
+# Excluded: Germany (missing 2019-2022), Belgium & France (data reclassification issues)
+analysis <- data[data$reason == "Highly skilled workers" & 
+                 data$country %in% c("Netherlands", "Denmark", "Sweden", "Austria"), ]
+analysis <- analysis[analysis$year >= 2015 & analysis$year <= 2024 & analysis$year != 2019, ]
+```
+
+## Cross-Country Comparison
+
+```{r comparison-table}
+analysis[c("country", "year", "permits")] %>%
+  pivot_wider(names_from = country, values_from = permits)
+```
+
+Belgium and France were excluded as controls due to data quality concerns: Belgium's
+"Highly skilled workers" permits dropped from 3,555 to 20 in a single year (2016–2017),
+almost certainly reflecting a change in reporting methodology rather than actual migration.
+Germany — conceptually the strongest control (no competing tax scheme) — is missing
+data for 2019–2022 in this category.
+
+## Indexed Trends Plot
+
+```{r trend-plot, fig.width=8, fig.height=5}
+plot_data <- analysis %>%
+  group_by(country) %>%
+  mutate(index = permits / permits[year == 2018] * 100) %>%
+  ungroup()
+
+ggplot(plot_data, aes(x = year, y = index, color = country)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 2019, linetype = "dashed") +
+  labs(title = "Highly skilled worker permits (2018 = 100)",
+       subtitle = "Dashed line = 2019 reform of the 30% ruling. Source: Eurostat migr_resocc",
+       x = "Year", y = "Index (2018 = 100)") +
+  theme_minimal()
+```
+
+The indexed plot shows roughly parallel pre-reform trends for the Netherlands, Denmark, and
+Sweden (supporting the parallel trends assumption). After 2019, all countries experience a
+COVID dip and subsequent recovery. The Netherlands shows the sharpest spike in 2022
+(~180% of 2018 levels), followed by a steep decline. Austria diverges dramatically, likely
+due to country-specific factors unrelated to the Dutch reform.
+
+
+# Fiscal Computation
+
+This section quantifies the budgetary effects of the 30% ruling for both the government
+(foregone tax revenue) and individual expats (tax savings), following the supervisor's
+guidance. We compute effects across salary levels and compare three policy regimes.
+
+## Tax Function (2025 Brackets)
+
+```{r tax-function}
+# Netherlands Box 1 income tax brackets for 2025
+# Source: KVK / Belastingdienst
+calc_tax <- function(income) {
+  if (income <= 0) return(0)
+  b1 <- 38441; b2 <- 76817
+  r1 <- 0.3582; r2 <- 0.3748; r3 <- 0.4950
+  if (income <= b1) return(income * r1)
+  if (income <= b2) return(b1 * r1 + (income - b1) * r2)
+  return(b1 * r1 + (b2 - b1) * r2 + (income - b2) * r3)
+}
+```
+
+## Per-Person Tax Savings
+
+```{r fiscal-table}
+salaries <- seq(50000, 200000, by = 10000)
+
+fiscal <- data.frame(
+  gross_salary = salaries,
+  tax_normal = sapply(salaries, calc_tax),
+  tax_30pct = sapply(salaries, function(x) calc_tax(x * 0.70)),
+  tax_27pct = sapply(salaries, function(x) calc_tax(x * 0.73))
+)
+
+fiscal$saving_30 <- fiscal$tax_normal - fiscal$tax_30pct
+fiscal$saving_27 <- fiscal$tax_normal - fiscal$tax_27pct
+fiscal$eff_rate_normal <- round(fiscal$tax_normal / fiscal$gross_salary * 100, 1)
+fiscal$eff_rate_30 <- round(fiscal$tax_30pct / fiscal$gross_salary * 100, 1)
+fiscal$eff_rate_27 <- round(fiscal$tax_27pct / fiscal$gross_salary * 100, 1)
+
+fiscal[, c("gross_salary", "saving_30", "saving_27", 
+           "eff_rate_normal", "eff_rate_30", "eff_rate_27")]
+```
+
+The annual tax saving ranges from roughly €5,500 at €50,000 to €30,000 at €200,000. The
+ruling reduces effective tax rates dramatically: for an expat earning €100,000, the effective rate
+drops from 39.6% to 25.6%. The SEO report (2024) found a mean salary of €83,000 among
+beneficiaries, placing the typical annual saving at approximately €9,000–€10,000.
+
+An important nuance from the IND/CBS cohort study (Van der Werf et al., 2023): only 35% of
+the 2014 cohort was still in the Netherlands after 6–7 years. This means that for the majority
+of beneficiaries, the reduction in duration from 8 to 5 years does not actually bite — they would
+have left anyway before reaching year 6. The reform's main effect is therefore concentrated on
+the most highly committed migrants: those who planned to stay beyond 5 years.
+
+This is confirmed by Giarola et al.'s (2023) finding that only the top 5% — and especially the
+top 1% — show significant out-migration responses to the loss of the tax break, while workers
+between the 50th and 95th percentile show no behavioural change at all. High earners are
+more likely to be long-stayers who planned to use the full duration, which is precisely why
+the duration reduction hits them hardest.
+
+The Dialogic (2017) ETK analysis provides an additional lens: for incomes above €100,000,
+real extraterritorial costs fall below 6% of salary. This means the 30% exemption for top
+earners is largely a tax subsidy rather than a cost reimbursement — which simultaneously
+explains why the ruling is politically contested and why high earners respond so strongly to
+changes in its generosity. Crucially, Dialogic also found that only ~5% of Dutch employers
+use the ruling, but just 171 firms (0.05% of all employers) account for 43% of all users.
+This concentration in multinational headquarters and large tech/finance firms has important
+implications: the ruling's impact on the investment climate is real but disproportionately
+benefits large internationally mobile firms, which have the most to gain from relocating
+if the fiscal environment deteriorates.
+
+```{r fiscal-plot, fig.width=8, fig.height=5}
+fiscal_long <- fiscal %>%
+  select(gross_salary, saving_30, saving_27) %>%
+  pivot_longer(cols = c(saving_30, saving_27), 
+               names_to = "regime", values_to = "saving") %>%
+  mutate(regime = ifelse(regime == "saving_30", 
+                         "30% ruling (current)", "27% ruling (from 2027)"))
+
+ggplot(fiscal_long, aes(x = gross_salary, y = saving, color = regime)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_x_continuous(labels = comma_format(prefix = "€")) +
+  scale_y_continuous(labels = comma_format(prefix = "€")) +
+  labs(title = "Annual tax saving by salary level",
+       subtitle = "Comparison of 30% and 27% regime (2025 brackets)",
+       x = "Gross annual salary", y = "Annual tax saving (€)", color = "Regime") +
+  theme_minimal()
+```
+
+## Lifetime Benefit: Three Policy Scenarios
+
+```{r lifetime-benefit}
+discount_rate <- 0.03
+
+pv <- function(annual_saving, years, r = discount_rate) {
+  sum(annual_saving / (1 + r)^(1:years))
+}
+
+fiscal$pv_pre2019 <- sapply(fiscal$saving_30, function(s) pv(s, 8))
+fiscal$pv_post2019 <- sapply(fiscal$saving_30, function(s) pv(s, 5))
+fiscal$pv_post2027 <- sapply(fiscal$saving_27, function(s) pv(s, 5))
+fiscal$reduction_2019 <- round((1 - fiscal$pv_post2019 / fiscal$pv_pre2019) * 100, 1)
+fiscal$reduction_2027 <- round((1 - fiscal$pv_post2027 / fiscal$pv_pre2019) * 100, 1)
+
+fiscal[, c("gross_salary", "pv_pre2019", "pv_post2019", "pv_post2027", 
+           "reduction_2019", "reduction_2027")]
+```
+
+The 2019 reform cut the lifetime tax benefit by approximately 34.8% across all salary levels.
+For an expat earning €100,000, this means a reduction from ~€98,500 to ~€64,300 — a loss
+of over €34,000 in present value. The 2027 reform adds a further reduction, bringing total
+lifetime benefit down by ~41% relative to the pre-2019 regime.
+
+```{r lifetime-plot, fig.width=8, fig.height=5}
+pv_long <- fiscal %>%
+  select(gross_salary, pv_pre2019, pv_post2019, pv_post2027) %>%
+  pivot_longer(cols = starts_with("pv_"), names_to = "regime", values_to = "pv") %>%
+  mutate(regime = case_when(
+    regime == "pv_pre2019" ~ "Pre-2019: 30% for 8 years",
+    regime == "pv_post2019" ~ "Post-2019: 30% for 5 years",
+    regime == "pv_post2027" ~ "Post-2027: 27% for 5 years"))
+
+ggplot(pv_long, aes(x = gross_salary, y = pv, color = regime)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_x_continuous(labels = comma_format(prefix = "€")) +
+  scale_y_continuous(labels = comma_format(prefix = "€")) +
+  labs(title = "Lifetime tax benefit by policy regime",
+       subtitle = "Present value at 3% discount rate, 2025 brackets",
+       x = "Gross annual salary", y = "Present value of total benefit (€)", 
+       color = "Policy regime") +
+  theme_minimal()
+```
+
+## Aggregate Fiscal Cost and Cross-Check with SEO
+
+SEO (2024) reports: ~110,000 users, ~€1 billion fiscal cost, avg salary €83,000
+
+```{r aggregate-cost, echo=TRUE}
+
+# Our calculation:
+representative_salary <- 83000
+representative_saving <- calc_tax(representative_salary) - calc_tax(representative_salary * 0.70)
+n_users_2022 <- 109502
+
+cat("Per-person annual saving (€83k salary): €", 
+    format(round(representative_saving), big.mark = ","), "\n")
+cat("Bottom-up fiscal cost estimate: €", 
+    format(round(representative_saving * n_users_2022 / 1e9, 2)), " billion\n")
+cat("SEO (2024) reported fiscal cost: ~€1.0 billion (2022)\n")
+cat("SEO (2024) net revenue (method 2): €57.2 million (2022)\n\n")
+
+# Per-person lifetime benefit reduction from 2019 reform
+pv_saving <- pv(representative_saving, 8) - pv(representative_saving, 5)
+cat("Per-person lifetime benefit reduction (8→5 years): €",
+    format(round(pv_saving), big.mark = ","), "\n")
+cat("Reduction as percentage: ",
+    round((1 - pv(representative_saving, 5) / pv(representative_saving, 8)) * 100, 1),
+    "%\n", sep = "")
+```
+
+Our bottom-up estimate of the fiscal cost is somewhat below SEO's reported €1 billion because
+our calculation uses 2025 tax brackets and doesn't account for the full salary distribution
+(SEO's figure includes all income levels, weighted by actual frequency). The key insight from
+SEO's second method is that the ruling generated a cumulative €900 million in net revenue
+over 2016–2022 — meaning it pays for itself when accounting for the tax revenue from migrants
+who would not have come without the incentive.
+
+
+# References
+
+- Bijlsma, M., Stäbler, D., Verheuvel, N., Ourak, W., Ferwerda, J., & Weel, B. ter. (2024). Kunde, kosten en keuzes: Evaluatie 30%-regeling, ETK-regeling & partiële buitenlandse belastingplicht 2016–2022. SEO Economisch Onderzoek, Amsterdam. SEO-rapport nr. 2024-78. https://www.seo.nl/wp-content/uploads/2024/06/2024-78-Kunde-kosten-en-keuzes.pdf
+- Godar, S., Flamant, E., & Richard, G. (2021). New forms of tax competition in the European Union: An empirical investigation. EU Tax Observatory Report No. 3. https://www.taxobservatory.eu/www-site/uploads/2021/11/EU-Tax-Observatory-Report-3-Tax-Competition-November-2021-3.pdf
+- Kleven, H.J., Landais, C., Saez, E., & Schultz, E. (2014). Migration and wage effects of taxing top earners: Evidence from the foreigners' tax scheme in Denmark. *Quarterly Journal of Economics*, 129(1), 333–378.
+- Kleven, H.J., Landais, C., Muñoz, M., & Stantcheva, S. (2020). Taxation and migration: Evidence and policy implications. *Journal of Economic Perspectives*, 34(2), 119–142.
+- Vankan, A., Brennenraedts, R., den Hertog, P., Driesse, M., & Veldman, J. (2017). Evaluatie 30%-regeling. Dialogic Innovation & Interaction, Utrecht. Commissioned by the Ministry of Finance. https://open.overheid.nl/documenten/ronl-844cbaf9b3266ed4801810c4a2991605d4ac5bb1/pdf
+- Giarola, J.V.C., Marie, O., Cörvers, F., & Schmeets, H. (2023). Tax-Induced Emigration: Who Flees High Taxes? Evidence from the Netherlands. *Tinbergen Institute Discussion Paper* TI 2023-053/V.
+- Moretti, E., & Wilson, D.J. (2017). The effect of state taxes on the geographical location of top earners. *American Economic Review*, 107(7), 1858–1903.
+- Timm, L.M. (2025). *Migrants and Multinationals: Essays on the Local Effects of Globalization.* PhD Thesis, Universiteit van Amsterdam. Tinbergen Institute Research Series No. 880.
+- Timm, L., Giuliodori, M., & Muller, P. (2025). Tax Incentives for Migrants With Mid-Level Earnings: Evidence from the Netherlands. *American Economic Journal: Applied Economics*, 17(3), 42–79.
+- Akcigit, U., Baslandze, S., & Stantcheva, S. (2016). Taxation and the international mobility of inventors. *American Economic Review*, 106(10), 2930–2981.
+- OECD (2025). *Taxing Wages 2025.* Paris: OECD Publishing.
+- Belastingdienst (2024). *Besluit Woo-verzoek over de 30%-regeling.* 20 September 2024.
+- Van der Werf, F., Nicolaas, H., Muermans, H., & Liu, J. (2023). *Kenniswerkers en zoekjaarders in Nederland: Een cohortstudie naar verblijf van kenniswerkers en zoekjaarders in Nederland.* IND/CBS, The Hague.
+-Netherlands Chamber of Commerce, KVK. (2025). The expat scheme (30% ruling) for foreign employees in the Netherlands. Business.gov.nl. Retrieved June 11, 2026, from https://business.gov.nl/staff/employing-staff/the-expat-scheme-30-percent-ruling-in-the-netherlands/
