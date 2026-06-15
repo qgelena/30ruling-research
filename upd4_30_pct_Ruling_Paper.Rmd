@@ -215,15 +215,40 @@ We digitise their key tables for our analysis.
 ```{r seo-users}
 # Active users and fiscal cost per year (SEO 2024, Figure 3.1 / Table 3.11)
 # Source: Bijlsma et al. (2024), o.b.v. CBS Microdata
+# Numeric data for computation (keep this clean)
 seo_users <- data.frame(
-  year = 2016:2022,
-  active_users = c(59565, 69538, 84165, 93932, 97604, 89049, 109502),
-  total_income_m = c(4597, 5401, 6273, 7265, 8103, 6686, 8001),
-  tax_exempt_m = c(1379, 1620, 1882, 2179, 2431, 2006, 2400),
-  tax_revenue_m = c(1287, 1512, 1756, 2034, 2269, 1872, 2240),
+  year               = 2016:2022,
+  active_users       = c(59565, 69538, 84165, 93932, 97604,  89049, 109502),
+  total_income_m     = c(4597, 5401, 6273, 7265, 8103, 6686, 8001),
+  tax_exempt_m       = c(1379, 1620, 1882, 2179, 2431, 2006, 2400),
+  taxable_m          = c(3218, 3781, 4391, 5085, 5672, 4680, 5601),
+  tax_revenue_m      = c(1287, 1512, 1756, 2034, 2269, 1872, 2240),
   foregone_revenue_m = c(552, 648, 753, 872, 972, 802, 960),
-  net_revenue_m = c(736, 864, 1004, 1162, 1296, 1070, 1280)
+  net_revenue_m      = c(736, 864, 1004, 1162, 1296, 1070, 1280)
 )
+
+# Display table with a description column (transposed: one row per variable)
+seo_display <- data.frame(
+  Variable = c("Total income", "Exempt (30%)", "Taxable (70%)",
+               "Tax revenue", "Foregone revenue", "Net revenue"),
+  `2016` = c(4597, 1379, 3218, 1287, 552, 736),
+  `2017` = c(5401, 1620, 3781, 1512, 648, 864),
+  `2018` = c(6273, 1882, 4391, 1756, 753, 1004),
+  `2019` = c(7265, 2179, 5085, 2034, 872, 1162),
+  `2020` = c(8103, 2431, 5672, 2269, 972, 1296),
+  `2021` = c(6686, 2006, 4680, 1872, 802, 1070),
+  `2022` = c(8001, 2400, 5601, 2240, 960, 1280),
+  `What it means` = c(
+    "Combined gross salary of all full-year 30% users",
+    "The 30% tax-free portion",
+    "The other 70% that is taxed",
+    "Tax collected on taxable portion (40%)",
+    "Tax foregone on exempt portion (40%)",
+    "Tax revenue minus foregone revenue"),
+  check.names = FALSE
+)
+
+knitr::kable(seo_display, caption = "Net tax revenue of 30% ruling users, Method 1 (€ million). Source: SEO (2024), Table 3.11.")
 
 seo_users
 ```
